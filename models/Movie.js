@@ -1,5 +1,5 @@
 import { DataTypes } from 'sequelize';
-import sequelize from '../config/db.js';
+import sequelize from '../utils/db.js'; // ✅ Sequelize DB connection
 
 const Movie = sequelize.define("Movie", {
     title: DataTypes.STRING,
