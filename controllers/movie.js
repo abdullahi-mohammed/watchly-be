@@ -43,7 +43,7 @@ export const uploadMovie = async (req, res) => {
             cloudinary_url: videoUpload.secure_url,
             cloudinary_id: videoUpload.public_id,
             format: videoUpload.format,
-            duration: Math.floor(videoUpload.duration),
+            duration: videoUpload.duration,
             bytes: videoUpload.bytes,
             width: videoUpload.width,
             height: videoUpload.height,
