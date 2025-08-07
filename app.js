@@ -15,7 +15,10 @@ app.use(
     cors({
         origin: [
             "http://localhost:8080",
-            "http://localhost:5173"
+            "http://localhost:5173",
+            "https://watchly-fe-ycft.vercel.app",
+            "watchly-fe-ycft.vercel.app",
+
         ],
     })
 );
@@ -31,7 +34,7 @@ const startServer = async () => {
         console.log("✅ PostgreSQL connected via Sequelize");
 
         // Optional: sync models to DB
-        await sequelize.sync(); // or use { force: true } to recreate tables
+        await sequelize.sync({ alter: true }); // or use { force: true } to recreate tables
 
         app.listen(port, () => {
             console.log(`🚀 Server running on port ${port}`);
