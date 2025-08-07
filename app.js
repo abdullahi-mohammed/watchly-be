@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
-import connectDB from "./utils/db.js";
+import sequelize from "./utils/db.js"; // ✅ Sequelize DB
 import movieRoutes from "./routes/movie.js";
 
 dotenv.config();
@@ -20,11 +20,26 @@ app.use(
     })
 );
 
-connectDB();
 app.use("/api/movies", movieRoutes);
 
-
+// ✅ Start server only after Sequelize connection is successful
 const port = process.env.PORT || 5000;
-app.listen(port, () => {
-    console.log(`Server Running on port ${port}`);
-});
+
+const startServer = async () => {
+    try {
+        await sequelize.authenticate();
+        console.log("✅ PostgreSQL connected via Sequelize");
+
+        // Optional: sync models to DB
+        await sequelize.sync(); // or use { force: true } to recreate tables
+
+        app.listen(port, () => {
+            console.log(`🚀 Server running on port ${port}`);
+        });
+    } catch (error) {
+        console.error("❌ Unable to connect to the database:", error);
+        process.exit(1); // stop process if DB fails
+    }
+};
+
+startServer();
