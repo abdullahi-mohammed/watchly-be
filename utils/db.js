@@ -1,20 +1,17 @@
-import mongoose from "mongoose";
-import dotenv from "dotenv";
+// file: sequelize.js
+import { Sequelize, DataTypes } from 'sequelize';
 
-dotenv.config();
-const connectDB = async () => {
-    try {
-        console.log(process.env.MONGODB_URI, "Connecting to MongoDB...");
+const sequelize = new Sequelize('postgresql://bkddzvgcwxvucudslzgy:uteivznyofkqueosrirqiwemwhooej@9qasp5v56q8ckkf5dc.leapcellpool.com:6438/xcmryejgvrwapjfcmduk?schema=myschema');
 
-        await mongoose.connect(process.env.MONGODB_URI, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
-        });
-        console.log("MongoDB connected");
-    } catch (err) {
-        console.error(err);
-        process.exit(1);
-    }
-};
 
-export default connectDB;
+const Test = sequelize.define('Test', {
+    name: DataTypes.STRING,
+}, { schema: 'my_schema', timestamps: false });
+
+(async () => {
+    await sequelize.sync();
+    await Test.create({ name: 'Sequelize' });
+    console.log(await Test.findAll());
+})();
+
+export default sequelize;

@@ -29,11 +29,10 @@ export const uploadMovie = async (req, res) => {
             streamifier.createReadStream(files.video[0].buffer).pipe(uploadStream);
         });
 
-        console.log(videoUpload, thumbnailUpload, "Video and thumbnail uploaded successfully");
+        console.log("Video and thumbnail uploaded successfully", videoUpload, thumbnailUpload);
 
-
-        // Save all data to MongoDB
-        const movie = new Movie({
+        // Save movie to PostgreSQL via Sequelize
+        const movie = await Movie.create({
             title,
             description,
             category,
@@ -51,17 +50,16 @@ export const uploadMovie = async (req, res) => {
             created_at: videoUpload.created_at,
         });
 
-        await movie.save();
         res.status(201).json(movie);
     } catch (err) {
-        console.log("Error uploading movie:", err);
+        console.error("Error uploading movie:", err);
         res.status(500).json({ error: err.message });
     }
 };
 
 export const getMovies = async (req, res) => {
     try {
-        const movies = await Movie.find(); // No projection, get all fields
+        const movies = await Movie.findAll(); // Sequelize method
         res.status(200).json(movies);
     } catch (err) {
         res.status(500).json({ error: err.message });
