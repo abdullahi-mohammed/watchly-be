@@ -8,25 +8,37 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Ensure uploads directory exists - use process.cwd() for better compatibility
-const uploadsDir = path.join(process.cwd(), 'uploads');
+const getUploadsDirectory = () => {
+    // Try multiple possible locations
+    const possiblePaths = [
+        path.join(process.cwd(), 'uploads'),
+        path.join(__dirname, '../uploads'),
+        path.join(process.cwd(), 'temp_uploads'),
+        '/tmp/uploads', // Docker/Unix fallback
+        path.join(process.cwd(), 'tmp', 'uploads')
+    ];
 
-// Create uploads directory if it doesn't exist
-const ensureUploadsDirectory = () => {
-    try {
-        if (!fs.existsSync(uploadsDir)) {
-            fs.mkdirSync(uploadsDir, { recursive: true });
-            console.log(`📁 Created uploads directory: ${uploadsDir}`);
+    for (const dirPath of possiblePaths) {
+        try {
+            if (!fs.existsSync(dirPath)) {
+                fs.mkdirSync(dirPath, { recursive: true });
+                console.log(`📁 Created uploads directory: ${dirPath}`);
+            }
+            return dirPath;
+        } catch (error) {
+            console.warn(`⚠️  Could not create directory at ${dirPath}: ${error.message}`);
+            continue;
         }
-    } catch (error) {
-        console.error(`❌ Error creating uploads directory: ${error.message}`);
-        // Fallback to temp directory if needed
-        return path.join(process.cwd(), 'temp_uploads');
     }
-    return uploadsDir;
+
+    // If all else fails, use current directory
+    const fallbackPath = path.join(process.cwd(), 'uploads');
+    console.warn(`⚠️  Using fallback uploads directory: ${fallbackPath}`);
+    return fallbackPath;
 };
 
 // Initialize uploads directory
-const uploadsDirectory = ensureUploadsDirectory();
+const uploadsDirectory = getUploadsDirectory();
 
 // Configure disk storage
 const storage = multer.diskStorage({
@@ -38,7 +50,17 @@ const storage = multer.diskStorage({
             }
             cb(null, uploadsDirectory);
         } catch (error) {
-            cb(error);
+            console.error(`❌ Error with uploads directory: ${error.message}`);
+            // Use system temp directory as last resort
+            const tempDir = path.join(require('os').tmpdir(), 'watchly_uploads');
+            try {
+                if (!fs.existsSync(tempDir)) {
+                    fs.mkdirSync(tempDir, { recursive: true });
+                }
+                cb(null, tempDir);
+            } catch (tempError) {
+                cb(new Error(`Failed to create upload directory: ${tempError.message}`));
+            }
         }
     },
     filename: (req, file, cb) => {

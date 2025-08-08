@@ -142,14 +142,24 @@ export const checkMemoryUsage = () => {
 // Check environment variables
 export const checkEnvironment = () => {
     const requiredEnvVars = [
-        'DATABASE_URL',
         'CLOUDINARY_CLOUD_NAME',
         'CLOUDINARY_API_KEY',
         'CLOUDINARY_API_SECRET'
     ];
 
-    const missing = requiredEnvVars.filter(varName => !process.env[varName]);
+    // Check for database URL (either DATABASE_URL or POSTGRESQL_DB_STRING)
+    const hasDatabaseUrl = process.env.DATABASE_URL || process.env.POSTGRESQL_DB_STRING;
+    
+    if (!hasDatabaseUrl) {
+        return {
+            status: 'unhealthy',
+            message: 'Missing database URL',
+            error: 'Please set DATABASE_URL or POSTGRESQL_DB_STRING in your .env file'
+        };
+    }
 
+    const missing = requiredEnvVars.filter(varName => !process.env[varName]);
+    
     if (missing.length > 0) {
         return {
             status: 'unhealthy',
@@ -164,7 +174,7 @@ export const checkEnvironment = () => {
         details: {
             port: process.env.PORT || '5000 (default)',
             node_env: process.env.NODE_ENV || 'development',
-            database_url: process.env.DATABASE_URL ? 'Set' : 'Not set',
+            database_url: hasDatabaseUrl ? 'Set' : 'Not set',
             cloudinary_cloud_name: process.env.CLOUDINARY_CLOUD_NAME ? 'Set' : 'Not set'
         }
     };
@@ -181,10 +191,10 @@ export const performHealthCheck = async () => {
     };
 
     // Determine overall status
-    const overallStatus = Object.values(checks).every(check => check.status === 'healthy')
-        ? 'healthy'
-        : Object.values(checks).some(check => check.status === 'unhealthy')
-            ? 'unhealthy'
+    const overallStatus = Object.values(checks).every(check => check.status === 'healthy') 
+        ? 'healthy' 
+        : Object.values(checks).some(check => check.status === 'unhealthy') 
+            ? 'unhealthy' 
             : 'warning';
 
     healthStatus = {
@@ -208,14 +218,14 @@ export const startHealthMonitoring = (intervalMs = 30000) => {
     setInterval(async () => {
         await performHealthCheck();
     }, intervalMs);
-
+    
     console.log(`🔄 Health monitoring started (interval: ${intervalMs}ms)`);
 };
 
 // Detailed health check for debugging
 export const getDetailedHealthCheck = async () => {
     const health = await performHealthCheck();
-
+    
     // Add additional system information
     health.system = {
         node_version: process.version,
@@ -225,6 +235,6 @@ export const getDetailedHealthCheck = async () => {
         memory_usage: process.memoryUsage(),
         cpu_usage: process.cpuUsage()
     };
-
+    
     return health;
 };
