@@ -77,13 +77,16 @@ export const checkCloudinary = async () => {
 // Check disk space
 export const checkDiskSpace = () => {
     try {
-        const uploadsDir = path.join(__dirname, '../uploads');
+        // Use the same uploads directory path as upload utility
+        const uploadsDir = path.join(process.cwd(), 'uploads');
+
         if (!fs.existsSync(uploadsDir)) {
             return {
                 status: 'warning',
                 message: 'Uploads directory does not exist',
                 details: {
-                    path: uploadsDir
+                    path: uploadsDir,
+                    suggestion: 'Directory will be created automatically on first upload'
                 }
             };
         }
@@ -139,7 +142,7 @@ export const checkMemoryUsage = () => {
 // Check environment variables
 export const checkEnvironment = () => {
     const requiredEnvVars = [
-        'POSTGRESQL_DB_STRING',
+        'DATABASE_URL',
         'CLOUDINARY_CLOUD_NAME',
         'CLOUDINARY_API_KEY',
         'CLOUDINARY_API_SECRET'
@@ -161,7 +164,7 @@ export const checkEnvironment = () => {
         details: {
             port: process.env.PORT || '5000 (default)',
             node_env: process.env.NODE_ENV || 'development',
-            database_url: process.env.POSTGRESQL_DB_STRING ? 'Set' : 'Not set',
+            database_url: process.env.DATABASE_URL ? 'Set' : 'Not set',
             cloudinary_cloud_name: process.env.CLOUDINARY_CLOUD_NAME ? 'Set' : 'Not set'
         }
     };

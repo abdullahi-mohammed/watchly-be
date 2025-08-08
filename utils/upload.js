@@ -7,16 +7,39 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Ensure uploads directory exists
-const uploadsDir = path.join(__dirname, '../uploads');
-if (!fs.existsSync(uploadsDir)) {
-    fs.mkdirSync(uploadsDir, { recursive: true });
-}
+// Ensure uploads directory exists - use process.cwd() for better compatibility
+const uploadsDir = path.join(process.cwd(), 'uploads');
+
+// Create uploads directory if it doesn't exist
+const ensureUploadsDirectory = () => {
+    try {
+        if (!fs.existsSync(uploadsDir)) {
+            fs.mkdirSync(uploadsDir, { recursive: true });
+            console.log(`📁 Created uploads directory: ${uploadsDir}`);
+        }
+    } catch (error) {
+        console.error(`❌ Error creating uploads directory: ${error.message}`);
+        // Fallback to temp directory if needed
+        return path.join(process.cwd(), 'temp_uploads');
+    }
+    return uploadsDir;
+};
+
+// Initialize uploads directory
+const uploadsDirectory = ensureUploadsDirectory();
 
 // Configure disk storage
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, uploadsDir);
+        // Ensure directory exists before each upload
+        try {
+            if (!fs.existsSync(uploadsDirectory)) {
+                fs.mkdirSync(uploadsDirectory, { recursive: true });
+            }
+            cb(null, uploadsDirectory);
+        } catch (error) {
+            cb(error);
+        }
     },
     filename: (req, file, cb) => {
         // Generate unique filename with timestamp

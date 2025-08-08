@@ -9,11 +9,11 @@ const __dirname = path.dirname(__filename);
 console.log('🧪 Testing Large File Upload System');
 console.log('====================================');
 
-// Check if uploads directory exists
-const uploadsDir = path.join(__dirname, 'uploads');
+// Check if uploads directory exists - use same path as upload utility
+const uploadsDir = path.join(process.cwd(), 'uploads');
 if (fs.existsSync(uploadsDir)) {
     console.log('✅ Uploads directory exists');
-
+    
     // List files in uploads directory
     const files = fs.readdirSync(uploadsDir);
     if (files.length > 0) {
@@ -28,6 +28,7 @@ if (fs.existsSync(uploadsDir)) {
     }
 } else {
     console.log('❌ Uploads directory does not exist');
+    console.log('   Directory will be created automatically on first upload');
 }
 
 // Test configuration
