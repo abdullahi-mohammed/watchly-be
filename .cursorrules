@@ -1,0 +1,143 @@
+# Cursor Rules for Watchly Backend
+
+## Project Context
+This is a Node.js/Express backend API for a movie management application called "Watchly". The project uses PostgreSQL with Sequelize ORM and integrates with Cloudinary for file uploads.
+
+## Code Style & Patterns
+
+### File Organization
+- Use ES6 modules (import/export) instead of CommonJS
+- Follow MVC pattern: controllers/ for business logic, models/ for database schemas, routes/ for API endpoints
+- Keep utility functions in utils/ directory
+- Use descriptive file names in camelCase
+
+### Database Operations
+- Always use async/await with Sequelize operations
+- Implement proper error handling with try-catch blocks
+- Use parameterized queries (handled by Sequelize)
+- Include proper validation before database operations
+
+### API Design
+- Follow RESTful conventions
+- Use consistent HTTP status codes
+- Return JSON responses with proper structure
+- Include error messages in responses
+- Use proper HTTP methods (GET, POST, PUT, DELETE)
+
+### Error Handling
+- Implement try-catch blocks in all async operations
+- Return appropriate HTTP status codes
+- Log errors for debugging
+- Don't expose internal error details to clients
+
+### File Upload
+- Use Cloudinary for image storage
+- Implement file size and type validation
+- Handle upload errors gracefully
+- Return Cloudinary URLs for frontend access
+
+## Technology Stack
+- Node.js with Express.js
+- PostgreSQL database
+- Sequelize ORM
+- Cloudinary for file storage
+- CORS for cross-origin requests
+- Environment variables for configuration
+
+## Development Guidelines
+
+### Adding New Features
+1. Create/update models in models/ directory
+2. Add business logic in controllers/ directory
+3. Define routes in routes/ directory
+4. Update app.js to register new routes
+5. Test endpoints thoroughly
+
+### Database Changes
+1. Update Sequelize models
+2. Use sequelize.sync() for development
+3. Consider migrations for production
+4. Test database operations
+
+### Security Considerations
+- Validate all input data
+- Use environment variables for sensitive data
+- Implement proper CORS configuration
+- Sanitize user inputs
+- Use HTTPS in production
+
+### Performance Optimization
+- Use connection pooling
+- Implement caching where appropriate
+- Optimize database queries
+- Monitor API response times
+
+## Common Patterns
+
+### Controller Pattern
+```javascript
+// Example controller structure
+export const methodName = async (req, res) => {
+    try {
+        // Business logic here
+        const result = await Model.operation();
+        res.status(200).json({ success: true, data: result });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+};
+```
+
+### Model Pattern
+```javascript
+// Example Sequelize model
+import { DataTypes } from 'sequelize';
+import sequelize from '../utils/db.js';
+
+const ModelName = sequelize.define('ModelName', {
+    // Define fields here
+}, {
+    timestamps: true
+});
+
+export default ModelName;
+```
+
+### Route Pattern
+```javascript
+// Example route structure
+import express from 'express';
+import { controllerMethod } from '../controllers/controller.js';
+
+const router = express.Router();
+router.get('/endpoint', controllerMethod);
+export default router;
+```
+
+## Environment Configuration
+- Use .env file for environment variables
+- Include DATABASE_URL for PostgreSQL connection
+- Add Cloudinary credentials
+- Set PORT for server configuration
+
+## Testing Considerations
+- Write unit tests for controllers
+- Test database operations
+- Validate API endpoints
+- Test file upload functionality
+- Include error scenario testing
+
+## Deployment Notes
+- Ensure all environment variables are set
+- Use production database settings
+- Configure proper CORS origins
+- Set up monitoring and logging
+- Implement health check endpoints
+
+## Code Quality Standards
+- Use meaningful variable and function names
+- Add comments for complex logic
+- Follow consistent indentation
+- Handle all potential error cases
+- Validate input data thoroughly
